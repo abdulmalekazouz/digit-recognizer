@@ -3,6 +3,7 @@
 Examples:
     digitrecognizer train --output digit_model.joblib
     digitrecognizer evaluate --model digit_model.joblib --output report.json
+    digitrecognizer predict --model digit_model.joblib --image my_digit.png
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ from collections.abc import Sequence
 from digitrecognizer.data import load_digit_dataset
 from digitrecognizer.evaluate import evaluate_model, format_report
 from digitrecognizer.model import DEFAULT_MODEL_PATH, load_model, save_model, train_model
+from digitrecognizer.preprocessing import image_to_feature_vector, load_image
 
 
 def _cmd_train(args: argparse.Namespace) -> int:
@@ -67,6 +69,26 @@ def _cmd_evaluate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_predict(args: argparse.Namespace) -> int:
+    """Handles the `predict` subcommand.
+
+    Args:
+        args: Parsed CLI arguments for the `predict` subcommand.
+
+    Returns:
+        The process exit code (0 on success).
+    """
+    model = load_model(args.model)
+    image = load_image(args.image)
+    feature_vector = image_to_feature_vector(image).reshape(1, -1)
+
+    prediction = int(model.predict(feature_vector)[0])
+    confidence = float(model.predict_proba(feature_vector).max())
+
+    print(f"Predicted digit: {prediction} (confidence: {confidence:.1%})")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Builds the top-level argparse parser for the `digitrecognizer` CLI.
 
@@ -107,6 +129,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--random-state", type=int, default=42, help="Seed for the train/test split (must match training)"
     )
     evaluate_parser.set_defaults(func=_cmd_evaluate)
+
+    predict_parser = subparsers.add_parser(
+        "predict", help="Predict the digit drawn in an image file"
+    )
+    predict_parser.add_argument(
+        "--model", default=str(DEFAULT_MODEL_PATH), help="Path to a model saved by `train`"
+    )
+    predict_parser.add_argument("--image", required=True, help="Path to an image of a digit")
+    predict_parser.set_defaults(func=_cmd_predict)
 
     return parser
 

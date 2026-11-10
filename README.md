@@ -26,12 +26,27 @@ source .venv/bin/activate   # .venv\Scripts\activate on Windows
 pip install -e ".[dev]"
 ```
 
+## Features
+
+- **Model training.** Trains a support vector classifier (RBF kernel) on
+  the digits dataset and persists it to disk with joblib.
+
 ## Project layout
 
 ```
 src/digitrecognizer/
-    data.py   Train/test split loader for the digits dataset
-tests/        pytest suite
+    data.py    Train/test split loader for the digits dataset
+    model.py    Training, saving, and loading the classifier
+    cli.py       argparse-based CLI
+tests/         pytest suite
+```
+
+## Usage
+
+### CLI
+
+```bash
+digitrecognizer train --output digit_model.joblib
 ```
 
 ## Testing

@@ -33,15 +33,21 @@ pip install -e ".[dev]"
 - **Evaluation metrics.** Accuracy, macro F1, a per-class
   precision/recall/F1 breakdown, and a full confusion matrix, printable
   as text or exportable as JSON.
+- **Image-to-prediction pipeline.** Converts an arbitrary image (any
+  size, any mode, light- or dark-background) of a hand-drawn digit into
+  the 8x8 feature vector the model expects -- auto-inverting and
+  auto-cropping to the drawn content -- and predicts a digit with a
+  confidence score.
 
 ## Project layout
 
 ```
 src/digitrecognizer/
-    data.py        Train/test split loader for the digits dataset
-    model.py        Training, saving, and loading the classifier
-    evaluate.py       Accuracy/precision/recall/F1/confusion-matrix metrics
-    cli.py              argparse-based CLI
+    data.py            Train/test split loader for the digits dataset
+    model.py            Training, saving, and loading the classifier
+    evaluate.py           Accuracy/precision/recall/F1/confusion-matrix metrics
+    preprocessing.py        Arbitrary image -> 8x8 model-ready feature vector
+    cli.py                    argparse-based CLI
 tests/         pytest suite
 ```
 
@@ -52,6 +58,7 @@ tests/         pytest suite
 ```bash
 digitrecognizer train --output digit_model.joblib
 digitrecognizer evaluate --model digit_model.joblib --output report.json
+digitrecognizer predict --model digit_model.joblib --image my_digit.png
 ```
 
 ## Testing

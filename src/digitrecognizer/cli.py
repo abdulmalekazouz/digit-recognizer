@@ -2,16 +2,19 @@
 
 Examples:
     digitrecognizer train --output digit_model.joblib
+    digitrecognizer evaluate --model digit_model.joblib --output report.json
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from collections.abc import Sequence
 
 from digitrecognizer.data import load_digit_dataset
-from digitrecognizer.model import DEFAULT_MODEL_PATH, save_model, train_model
+from digitrecognizer.evaluate import evaluate_model, format_report
+from digitrecognizer.model import DEFAULT_MODEL_PATH, load_model, save_model, train_model
 
 
 def _cmd_train(args: argparse.Namespace) -> int:
@@ -37,6 +40,33 @@ def _cmd_train(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_evaluate(args: argparse.Namespace) -> int:
+    """Handles the `evaluate` subcommand.
+
+    Note that `--test-size`/`--random-state` should match the values used
+    when the model was trained, since this re-derives the train/test
+    split rather than saving it alongside the model; mismatched values
+    would evaluate the model partly on data it was trained on.
+
+    Args:
+        args: Parsed CLI arguments for the `evaluate` subcommand.
+
+    Returns:
+        The process exit code (0 on success).
+    """
+    model = load_model(args.model)
+    dataset = load_digit_dataset(test_size=args.test_size, random_state=args.random_state)
+    report = evaluate_model(model, dataset)
+
+    print(format_report(report))
+
+    if args.output:
+        with open(args.output, "w", encoding="utf-8") as handle:
+            json.dump(report.to_dict(), handle, indent=2)
+        print(f"\nWrote full report to {args.output}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Builds the top-level argparse parser for the `digitrecognizer` CLI.
 
@@ -59,6 +89,24 @@ def build_parser() -> argparse.ArgumentParser:
         "--random-state", type=int, default=42, help="Seed for the train/test split"
     )
     train_parser.set_defaults(func=_cmd_train)
+
+    evaluate_parser = subparsers.add_parser(
+        "evaluate", help="Evaluate a saved model and print accuracy/confusion metrics"
+    )
+    evaluate_parser.add_argument(
+        "--model", default=str(DEFAULT_MODEL_PATH), help="Path to a model saved by `train`"
+    )
+    evaluate_parser.add_argument("--output", help="Path to write the full JSON report to")
+    evaluate_parser.add_argument(
+        "--test-size",
+        type=float,
+        default=0.2,
+        help="Fraction of data held out for evaluation (must match training)",
+    )
+    evaluate_parser.add_argument(
+        "--random-state", type=int, default=42, help="Seed for the train/test split (must match training)"
+    )
+    evaluate_parser.set_defaults(func=_cmd_evaluate)
 
     return parser
 

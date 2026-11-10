@@ -38,6 +38,8 @@ pip install -e ".[dev]"
   the 8x8 feature vector the model expects -- auto-inverting and
   auto-cropping to the drawn content -- and predicts a digit with a
   confidence score.
+- **Web UI.** Draw a digit on an HTML canvas and get a live prediction
+  with a confidence score, with no page reload.
 
 ## Project layout
 
@@ -48,6 +50,8 @@ src/digitrecognizer/
     evaluate.py           Accuracy/precision/recall/F1/confusion-matrix metrics
     preprocessing.py        Arbitrary image -> 8x8 model-ready feature vector
     cli.py                    argparse-based CLI
+    webapp.py                  Flask app (create_app() factory)
+    templates/, static/          Web UI
 tests/         pytest suite
 ```
 
@@ -60,6 +64,19 @@ digitrecognizer train --output digit_model.joblib
 digitrecognizer evaluate --model digit_model.joblib --output report.json
 digitrecognizer predict --model digit_model.joblib --image my_digit.png
 ```
+
+### Web app
+
+```bash
+flask --app digitrecognizer.webapp run --debug
+```
+
+Then open http://127.0.0.1:5000/, draw a digit, and press Predict. The
+first prediction trains and caches a model (`digit_model.joblib`) in the
+current directory since trained model files aren't checked into version
+control; subsequent predictions reuse it.
+
+![Digit Recognizer web UI](docs/screenshot-webui.jpg)
 
 ## Testing
 

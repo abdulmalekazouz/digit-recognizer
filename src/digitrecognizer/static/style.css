@@ -1,0 +1,124 @@
+:root {
+    color-scheme: light dark;
+    --bg: #f7f7f5;
+    --panel: #ffffff;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --border: #e3e3df;
+    --accent: #c2410c;
+    --accent-dark: #9a3412;
+    --error: #b3471e;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #16181d;
+        --panel: #1e2127;
+        --text: #e7e7e3;
+        --muted: #9aa0ac;
+        --border: #30333a;
+        --accent: #fb923c;
+        --accent-dark: #fdba74;
+        --error: #e0824f;
+    }
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+.container {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+    text-align: center;
+}
+
+h1 {
+    font-size: 1.6rem;
+    margin-bottom: 0.25rem;
+}
+
+.subtitle {
+    color: var(--muted);
+    margin-top: 0;
+    margin-bottom: 1.75rem;
+}
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+canvas {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    touch-action: none;
+    cursor: crosshair;
+    background: #fff;
+}
+
+.button-row {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 0.7rem 1.4rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+button:hover { background: var(--accent-dark); }
+
+button.secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+button.secondary:hover { background: var(--bg); }
+
+.result {
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.result-digit {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+}
+
+.muted { color: var(--muted); font-size: 0.9rem; }
+
+.error {
+    margin-top: 1.5rem;
+    background: color-mix(in srgb, var(--error) 15%, transparent);
+    border: 1px solid var(--error);
+    color: var(--error);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+}
+
+.disclaimer {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+}

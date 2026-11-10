@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Digit Recognizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h1>Digit Recognizer</h1>
+    <p class="subtitle">Draw a single digit (0-9) below, then press Predict.</p>
+
+    <div class="panel">
+        <canvas id="canvas" width="280" height="280"></canvas>
+        <div class="button-row">
+            <button id="clear-btn" class="secondary" type="button">Clear</button>
+            <button id="predict-btn" type="button">Predict</button>
+        </div>
+
+        <div id="result" class="result" hidden>
+            <span id="result-digit" class="result-digit"></span>
+            <span id="result-confidence" class="muted"></span>
+        </div>
+        <div id="error" class="error" hidden></div>
+    </div>
+
+    <p class="disclaimer">
+        The model is trained on scikit-learn's bundled 8x8-pixel digits dataset, so it
+        works best with large, centered, single-stroke digits -- not full MNIST-quality
+        handwriting recognition.
+    </p>
+</div>
+
+<script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let isDrawing = false;
+
+    function resetCanvas() {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = "#111111";
+        ctx.lineWidth = 18;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+    }
+    resetCanvas();
+
+    function canvasPoint(event) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: (event.clientX - rect.left) * (canvas.width / rect.width),
+            y: (event.clientY - rect.top) * (canvas.height / rect.height),
+        };
+    }
+
+    canvas.addEventListener("pointerdown", (event) => {
+        isDrawing = true;
+        const { x, y } = canvasPoint(event);
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    });
+
+    canvas.addEventListener("pointermove", (event) => {
+        if (!isDrawing) return;
+        const { x, y } = canvasPoint(event);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    });
+
+    function stopDrawing() {
+        isDrawing = false;
+    }
+    canvas.addEventListener("pointerup", stopDrawing);
+    canvas.addEventListener("pointerleave", stopDrawing);
+
+    const resultBox = document.getElementById("result");
+    const resultDigit = document.getElementById("result-digit");
+    const resultConfidence = document.getElementById("result-confidence");
+    const errorBox = document.getElementById("error");
+
+    document.getElementById("clear-btn").addEventListener("click", () => {
+        resetCanvas();
+        resultBox.hidden = true;
+        errorBox.hidden = true;
+    });
+
+    document.getElementById("predict-btn").addEventListener("click", async () => {
+        errorBox.hidden = true;
+        try {
+            const response = await fetch("/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image: canvas.toDataURL("image/png") }),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || "Prediction failed");
+            }
+            resultDigit.textContent = data.digit;
+            resultConfidence.textContent = `confidence: ${(data.confidence * 100).toFixed(1)}%`;
+            resultBox.hidden = false;
+        } catch (err) {
+            errorBox.textContent = err.message;
+            errorBox.hidden = false;
+        }
+    });
+</script>
+</body>
+</html>

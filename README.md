@@ -28,16 +28,20 @@ pip install -e ".[dev]"
 
 ## Features
 
-- **Model training.** Trains a support vector classifier (RBF kernel) on
-  the digits dataset and persists it to disk with joblib.
+- **Model training.** Trains a calibrated support vector classifier (RBF
+  kernel) on the digits dataset and persists it to disk with joblib.
+- **Evaluation metrics.** Accuracy, macro F1, a per-class
+  precision/recall/F1 breakdown, and a full confusion matrix, printable
+  as text or exportable as JSON.
 
 ## Project layout
 
 ```
 src/digitrecognizer/
-    data.py    Train/test split loader for the digits dataset
-    model.py    Training, saving, and loading the classifier
-    cli.py       argparse-based CLI
+    data.py        Train/test split loader for the digits dataset
+    model.py        Training, saving, and loading the classifier
+    evaluate.py       Accuracy/precision/recall/F1/confusion-matrix metrics
+    cli.py              argparse-based CLI
 tests/         pytest suite
 ```
 
@@ -47,6 +51,7 @@ tests/         pytest suite
 
 ```bash
 digitrecognizer train --output digit_model.joblib
+digitrecognizer evaluate --model digit_model.joblib --output report.json
 ```
 
 ## Testing
